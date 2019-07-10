@@ -13,10 +13,10 @@ elif cfgs.DATASET_NAME == 'FDDB':
         'back_ground': 0,
         'face': 1
     }
-elif cfgs.DATASET_NAME == 'ICDAR2015':
+elif cfgs.DATASET_NAME == 'Xray':
     NAME_LABEL_MAP = {
         'back_ground': 0,
-        'text': 1
+        'bone': 1
     }
 elif cfgs.DATASET_NAME.startswith('DOTA'):
     NAME_LABEL_MAP = {

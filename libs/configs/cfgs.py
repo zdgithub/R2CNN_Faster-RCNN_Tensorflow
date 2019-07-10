@@ -5,17 +5,18 @@ import tensorflow as tf
 
 
 # ------------------------------------------------
-VERSION = 'FasterRCNN_20180515_DOTA_v3'
+VERSION = 'R2CNN_rotatebox_2150_new'
 NET_NAME = 'resnet_v1_101'
 ADD_BOX_IN_TENSORBOARD = True
 # ---------------------------------------- System_config
 ROOT_PATH = os.path.abspath('../')
+# ROOT_PATH = '/home/zd/R2CNN_Faster-RCNN_Tensorflow-master'
 print(20*"++--")
 print(ROOT_PATH)
-GPU_GROUP = "2"
+GPU_GROUP = "1"
 SHOW_TRAIN_INFO_INTE = 10
 SMRY_ITER = 100
-SAVE_WEIGHTS_INTE = 2000
+SAVE_WEIGHTS_INTE = 10000
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -42,7 +43,7 @@ IS_FILTER_OUTSIDE_BOXES = True
 ROTATE_NMS_USE_GPU = True
 FIXED_BLOCKS = 2  # allow 0~3
 
-RPN_LOCATION_LOSS_WEIGHT = 1 / 7
+RPN_LOCATION_LOSS_WEIGHT = 1 / 2  # 1 / 7
 RPN_CLASSIFICATION_LOSS_WEIGHT = 2.0
 
 FAST_RCNN_LOCATION_LOSS_WEIGHT = 4.0
@@ -58,14 +59,14 @@ EPSILON = 1e-5
 MOMENTUM = 0.9
 LR = 0.0003  # 0.0003
 DECAY_STEP = [60000, 120000]  # 90000, 120000
-MAX_ITERATION = 1000000
+MAX_ITERATION = 200000 #3000000
 
 # -------------------------------------------- Data_preprocess_config
-DATASET_NAME = 'DOTA'  # 'ship', 'spacenet', 'pascal', 'coco'
+DATASET_NAME = 'Xray'  # 'ship', 'spacenet', 'pascal', 'coco'
 PIXEL_MEAN = [123.68, 116.779, 103.939]  # R, G, B. In tf, channel is RGB. In openCV, channel is BGR
-IMG_SHORT_SIDE_LEN = 800
+IMG_SHORT_SIDE_LEN = 600
 IMG_MAX_LENGTH = 1000
-CLASS_NUM = 15
+CLASS_NUM = 1
 
 # --------------------------------------------- Network_config
 BATCH_SIZE = 1
@@ -75,10 +76,10 @@ WEIGHT_DECAY = 0.0001
 
 
 # ---------------------------------------------Anchor config
-BASE_ANCHOR_SIZE_LIST = [256]  # can be modified
+BASE_ANCHOR_SIZE_LIST = [64]  #256 can be modified
 ANCHOR_STRIDE = [16]  # can not be modified in most situations
-ANCHOR_SCALES = [0.0625, 0.125, 0.25, 0.5, 1., 2.0]  # [4, 8, 16, 32]
-ANCHOR_RATIOS = [1, 1 / 2, 2., 1 / 3., 3., 5., 1 / 4., 4., 1 / 5., 6., 1 / 6., 7., 1 / 7.]
+ANCHOR_SCALES = [0.0625, 0.125, 0.25, 0.5, 1., 2.0]  # [4, 8, 16, 32, 64, 128]
+ANCHOR_RATIOS = [1, 1 / 2, 2]
 ROI_SCALE_FACTORS = [10., 10., 5.0, 5.0, 5.0]
 ANCHOR_SCALE_FACTORS = None
 
@@ -104,10 +105,10 @@ ROI_SIZE = 14
 ROI_POOL_KERNEL_SIZE = 2
 USE_DROPOUT = False
 KEEP_PROB = 1.0
-SHOW_SCORE_THRSHOLD = 0.5  # only show in tensorboard
+SHOW_SCORE_THRSHOLD = 0.5  # 0.5 only show in tensorboard
 
-FAST_RCNN_NMS_IOU_THRESHOLD = 0.1  # 0.6
-FAST_RCNN_NMS_MAX_BOXES_PER_CLASS = 150
+FAST_RCNN_NMS_IOU_THRESHOLD = 0.1  # 0.1
+FAST_RCNN_NMS_MAX_BOXES_PER_CLASS = 150 #150
 FAST_RCNN_IOU_POSITIVE_THRESHOLD = 0.4
 FAST_RCNN_IOU_NEGATIVE_THRESHOLD = 0.0   # 0.1 < IOU < 0.5 is negative
 FAST_RCNN_MINIBATCH_SIZE = 256  # if is -1, that is train with OHEM
