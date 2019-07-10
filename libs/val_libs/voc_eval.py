@@ -80,9 +80,9 @@ def parse_rec(filename):
     obj_struct['truncated'] = int(obj.find('truncated').text)
     obj_struct['difficult'] = int(obj.find('difficult').text)
     bbox = obj.find('bndbox')
-    rbox = [int(bbox.find('x0').text), int(bbox.find('y0').text), int(bbox.find('x1').text),
-            int(bbox.find('y1').text), int(bbox.find('x2').text), int(bbox.find('y2').text),
-            int(bbox.find('x3').text), int(bbox.find('y3').text)]
+    rbox = [float(bbox.find('x0').text), float(bbox.find('y0').text), float(bbox.find('x1').text),
+            float(bbox.find('y1').text), float(bbox.find('x2').text), float(bbox.find('y2').text),
+            float(bbox.find('x3').text), float(bbox.find('y3').text)]
     obj_struct['bbox'] = [min(rbox[::2]),
                           min(rbox[1::2]),
                           max(rbox[::2]),
@@ -256,17 +256,18 @@ def do_python_eval(test_imgid_list, test_annotation_path):
     # print("{}_ap: {}".format(cls, AP))
     # print("{}_recall: {}".format(cls, recall[-1]))
     # print("{}_precision: {}".format(cls, precision[-1]))
-
+    """
     c = colors.cnames.keys()
     c_dark = list(filter(lambda x: x.startswith('dark'), c))
     c = ['red', 'orange']
     plt.axis([0, 1.2, 0, 1])
     plt.plot(recall, precision, color=c_dark[index], label=cls)
+    """
 
-  plt.legend(loc='upper right')
-  plt.xlabel('R')
-  plt.ylabel('P')
-  plt.savefig('./PR_R.png')
+  #plt.legend(loc='upper right')
+  #plt.xlabel('R')
+  #plt.ylabel('P')
+  #plt.savefig('./PR_R.png')
 
   print("mAP is : {}".format(np.mean(AP_list)))
 

@@ -6,6 +6,8 @@ import numpy as np
 
 from PIL import Image, ImageDraw, ImageFont
 import cv2
+import scipy.io as sio
+import os
 
 from libs.configs import cfgs
 from libs.label_name_dict.label_dict import LABEl_NAME_MAP
@@ -135,12 +137,12 @@ def draw_box_cv(img, boxes, labels, scores):
         if label != 0:
             num_of_object += 1
             # color = (np.random.randint(255), np.random.randint(255), np.random.randint(255))
-            color = (0, 255, 0)
+            color = (0, 0, 255)
             cv2.rectangle(img,
                           pt1=(xmin, ymin),
                           pt2=(xmax, ymax),
                           color=color,
-                          thickness=2)
+                          thickness=1)
 
             category = LABEl_NAME_MAP[label]
 
@@ -170,16 +172,16 @@ def draw_box_cv(img, boxes, labels, scores):
             #                 fontScale=1,
             #                 thickness=2,
             #                 color=(color[1], color[2], color[0]))
-    cv2.putText(img,
+    """cv2.putText(img,
                 text=str(num_of_object),
                 org=((img.shape[1]) // 2, (img.shape[0]) // 2),
                 fontFace=3,
                 fontScale=1,
-                color=(255, 0, 0))
+                color=(255, 0, 0))"""
     return img
 
 
-def draw_rotate_box_cv(img, boxes, labels, scores):
+def draw_rotate_box_cv(img, boxes, labels, scores, imgname):
     img = img + np.array(cfgs.PIXEL_MEAN)
     boxes = boxes.astype(np.int64)
     labels = labels.astype(np.int32)
@@ -187,6 +189,23 @@ def draw_rotate_box_cv(img, boxes, labels, scores):
     img = np.array(img*255/np.max(img), np.uint8)
 
     num_of_object = 0
+    
+    # savepath = '/home/zd/r2cnn/' + imgname + '.mat'
+    # saveangle = '/home/zd/angles/' + imgname + '.mat'
+    contoursPath = cfgs.INFERENCE_SAVE_PATH + '/contours'
+    if not os.path.exists(contoursPath):
+	os.makedirs(contoursPath)
+
+    anglesPath = cfgs.INFERENCE_SAVE_PATH + '/angles'
+    if not os.path.exists(anglesPath):
+	os.makedirs(anglesPath)
+
+    savepath = os.path.join(contoursPath, imgname+'.mat')
+    saveangle = os.path.join(anglesPath, imgname+'.mat')
+    
+    contours = []
+    angles=[]
+    #sio.savemat(savepath, {'boxes':boxes})
     for i, box in enumerate(boxes):
         x_c, y_c, w, h, theta = box[0], box[1], box[2], box[3], box[4]
 
@@ -194,28 +213,37 @@ def draw_rotate_box_cv(img, boxes, labels, scores):
         if label != 0:
             num_of_object += 1
             # color = (np.random.randint(255), np.random.randint(255), np.random.randint(255))
-            color = (0, 255, 0)
+            color = (0, 0, 255)
             rect = ((x_c, y_c), (w, h), theta)
             rect = cv2.boxPoints(rect)
+            contours.append(rect)
+	    angles.append(theta)
+
             rect = np.int0(rect)
-            cv2.drawContours(img, [rect], -1, color, 2)
+	    if scores[i] >= 0.98:
+	        cv2.drawContours(img, [rect], -1, color, 1)      #red
+	    elif scores[i] >= 0.9:
+	        cv2.drawContours(img, [rect], -1, (255,0,0), 1)  #blue
+	    else:
+		cv2.drawContours(img, [rect], -1, (0,255,0), 1)  #green
 
             category = LABEl_NAME_MAP[label]
 
-            # if scores is not None:
-            #     cv2.rectangle(img,
-            #                   pt1=(x_c, y_c),
-            #                   pt2=(x_c + 120, y_c + 15),
-            #                   color=color,
-            #                   thickness=-1)
-            #     cv2.putText(img,
-            #                 text=category+": "+str(scores[i]),
-            #                 org=(x_c, y_c+10),
-            #                 fontFace=1,
-            #                 fontScale=1,
-            #                 thickness=2,
-            #                 color=(color[1], color[2], color[0]))
-            # else:
+            #show score of each bone
+            """if scores is not None:
+                cv2.rectangle(img,
+                              pt1=(x_c, y_c),
+                              pt2=(x_c + 120, y_c + 15),
+                              color=color,
+                              thickness=-1)
+                cv2.putText(img,
+                            text=category+": "+str(scores[i]),
+                            org=(x_c, y_c+10),
+                            fontFace=1,
+                            fontScale=1,
+                            thickness=2,
+                            color=(color[1], color[2], color[0]))"""
+            #else:
             #     cv2.rectangle(img,
             #                   pt1=(x_c, y_c),
             #                   pt2=(x_c + 40, y_c + 15),
@@ -228,12 +256,14 @@ def draw_rotate_box_cv(img, boxes, labels, scores):
             #                 fontScale=1,
             #                 thickness=2,
             #                 color=(color[1], color[2], color[0]))
-    cv2.putText(img,
+    """cv2.putText(img,
                 text=str(num_of_object),
                 org=((img.shape[1]) // 2, (img.shape[0]) // 2),
                 fontFace=3,
                 fontScale=1,
-                color=(255, 0, 0))
+                color=(255, 0, 0))"""
+    sio.savemat(savepath, {'contours':contours})
+    sio.savemat(saveangle, {'angles':angles})
     return img
 
 

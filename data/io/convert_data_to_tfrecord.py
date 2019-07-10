@@ -10,13 +10,13 @@ import cv2
 from libs.label_name_dict.label_dict import *
 from help_utils.tools import *
 
-tf.app.flags.DEFINE_string('VOC_dir', '/root/userfolder/yx/', 'Voc dir')
-tf.app.flags.DEFINE_string('xml_dir', 'icdar2015_xml', 'xml dir')
-tf.app.flags.DEFINE_string('image_dir', 'icdar2015_img', 'image dir')
+tf.app.flags.DEFINE_string('VOC_dir', './VOCdevkit/VOCdevkit_train/', 'Voc dir')
+tf.app.flags.DEFINE_string('xml_dir', 'Annotation', 'xml dir')
+tf.app.flags.DEFINE_string('image_dir', 'JPEGImages', 'image dir')
 tf.app.flags.DEFINE_string('save_name', 'train', 'save name')
 tf.app.flags.DEFINE_string('save_dir', '../tfrecord/', 'save name')
 tf.app.flags.DEFINE_string('img_format', '.jpg', 'format of image')
-tf.app.flags.DEFINE_string('dataset', 'ICDAR2015', 'dataset')
+tf.app.flags.DEFINE_string('dataset', 'Xray', 'dataset')
 FLAGS = tf.app.flags.FLAGS
 
 
@@ -60,11 +60,11 @@ def read_xml_gtbox_and_label(xml_path):
                 if child_item.tag == 'bndbox':
                     tmp_box = []
                     for node in child_item:
-                        tmp_box.append(int(node.text))
+                        tmp_box.append(float(node.text))
                     assert label is not None, 'label is none, error'
                     tmp_box.append(label)
                     box_list.append(tmp_box)
-
+       
     gtbox_label = np.array(box_list, dtype=np.int32)
 
     return img_height, img_width, gtbox_label
