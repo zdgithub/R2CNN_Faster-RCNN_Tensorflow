@@ -84,11 +84,12 @@ def inference(det_net, data_dir):
             det_detections_r = draw_box_in_img.draw_rotate_box_cv(np.squeeze(resized_img, 0),
                                                                   boxes=det_boxes_r_,
                                                                   labels=det_category_r_,
-                                                                  scores=det_scores_r_)
+                                                                  scores=det_scores_r_,
+                                                                  imgname=a_img_name)
             save_dir = os.path.join(cfgs.INFERENCE_SAVE_PATH, cfgs.VERSION)
             tools.mkdir(save_dir)
-            cv2.imwrite(save_dir + '/' + a_img_name + '_h.jpg',
-                        det_detections_h)
+            #cv2.imwrite(save_dir + '/' + a_img_name + '_h.jpg',
+            #            det_detections_h)
             cv2.imwrite(save_dir + '/' + a_img_name + '_r.jpg',
                         det_detections_r)
             view_bar('{} cost {}s'.format(a_img_name, (end - start)), i + 1, len(imgs))
@@ -101,7 +102,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train a R2CNN network')
     parser.add_argument('--data_dir', dest='data_dir',
                         help='data path',
-                        default='./inference_image/', type=str)
+                        default='./XrayPics/', type=str)
     parser.add_argument('--gpu', dest='gpu',
                         help='gpu index',
                         default='0', type=str)
