@@ -122,7 +122,7 @@ def svmPred(fuv, features):
     for k in range(n):
         j = int(decision[k, 0])
         pre = decision[k, 1]
-        if pre < -0.99:    # -1.2 -1.0
+        if pre < -1.1:    # -1.2 -0.99
             curH = features[j, 0]
             preH = features[j - 1, 0]
             curY = features[j, 4]

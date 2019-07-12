@@ -72,7 +72,21 @@ def inference(det_net, data_dir):
             all_boxes_new = all_boxes_r_        # [-1, 5]
             all_scores_new = all_scores_r_      # [-1]
             all_category_new = all_category_r_  # [-1]
+            
+	    """
+            # draw all 300 detection boxes
+	    all_indices = np.reshape(np.where(np.greater_equal(all_scores_new, cfgs.SHOW_SCORE_THRSHOLD)), -1)
+	    left_boxes = all_boxes_new[all_indices]
+	    left_scores = all_scores_new[all_indices]
+	    left_category = all_category_new[all_indices]
+	    detection_r = draw_box_in_img.draw_rotate_box_cv(np.squeeze(resized_img, 0),
+							     boxes=left_boxes,
+   							     labels=left_category,
+							     scores=left_scores,
+							     imgname=a_img_name)
+	    """
 
+            
             while True:
                 # nms
                 keep = mylibs.nmsRotate(all_boxes_new, all_scores_new,
@@ -117,6 +131,13 @@ def inference(det_net, data_dir):
             fangles = angles
             fscores = det_scores_new
 
+            # save contours and angles to showSVMdecision scores
+  	    detection_r = draw_box_in_img.draw_rotate_box_cv(np.squeeze(resized_img, 0),
+							     boxes=det_boxes_new,
+							     labels=det_category_new,
+							     scores=det_scores_new,
+							     imgname=a_img_name)           
+
             # final_dtbox[i, :] = [x0, y0, x1, y1, x2, y2, x3, y3, dg, ycenter, from_idx]
             final_dtbox = mylibs.getRboxDegree(fcontours, fangles)
             dt_idx = final_dtbox[:, -1].astype(np.int32)  # sorted
@@ -129,11 +150,11 @@ def inference(det_net, data_dir):
             t_dtbox = mylibs.getRboxDegree(tcontours, tangles)
 
             cobb_img = mylibs.getCobb(t_dtbox, img)
-
+            
             save_dir = os.path.join(cfgs.INFERENCE_SAVE_PATH, cfgs.VERSION)
             tools.mkdir(save_dir)
             cv2.imwrite(save_dir + '/' + a_img_name + '_r.jpg',
-                        cobb_img)
+                        detection_r)
 
 
 
