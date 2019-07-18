@@ -111,8 +111,8 @@ def train():
 
     global_step = slim.get_or_create_global_step()
     lr = tf.train.piecewise_constant(global_step,
-                                     boundaries=[np.int64(cfgs.DECAY_STEP[0]), np.int64(cfgs.DECAY_STEP[1])],
-                                     values=[cfgs.LR, cfgs.LR / 10., cfgs.LR / 100.])
+                                     boundaries=[np.int64(cfgs.DECAY_STEP[0]), np.int64(cfgs.DECAY_STEP[1]), np.int64(cfgs.DECAY_STEP[2])],
+                                     values=[cfgs.LR, cfgs.LR / 10., cfgs.LR / 100., cfgs.LR / 1000.])
     tf.summary.scalar('lr', lr)
     optimizer = tf.train.MomentumOptimizer(lr, momentum=cfgs.MOMENTUM)
 

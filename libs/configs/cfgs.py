@@ -5,7 +5,7 @@ import tensorflow as tf
 
 
 # ------------------------------------------------
-VERSION = 'R2CNN_rotatebox_2150_new'
+VERSION = 'R2CNN_rotatebox_2500'
 NET_NAME = 'resnet_v1_101'
 ADD_BOX_IN_TENSORBOARD = True
 # ---------------------------------------- System_config
@@ -16,7 +16,7 @@ print(ROOT_PATH)
 GPU_GROUP = "1"
 SHOW_TRAIN_INFO_INTE = 10
 SMRY_ITER = 100
-SAVE_WEIGHTS_INTE = 10000
+SAVE_WEIGHTS_INTE = 20000
 
 SUMMARY_PATH = ROOT_PATH + '/output/summary'
 TEST_SAVE_PATH = ROOT_PATH + '/tools/test_result'
@@ -58,8 +58,8 @@ GRADIENT_CLIPPING_BY_NORM = None   # 10.0  if None, will not clip
 EPSILON = 1e-5
 MOMENTUM = 0.9
 LR = 0.0003  # 0.0003
-DECAY_STEP = [60000, 120000]  # 90000, 120000
-MAX_ITERATION = 200000 #3000000
+DECAY_STEP = [50000, 100000, 150000]  # 90000, 120000
+MAX_ITERATION = 200000  #3000000
 
 # -------------------------------------------- Data_preprocess_config
 DATASET_NAME = 'Xray'  # 'ship', 'spacenet', 'pascal', 'coco'
@@ -105,7 +105,7 @@ ROI_SIZE = 14
 ROI_POOL_KERNEL_SIZE = 2
 USE_DROPOUT = False
 KEEP_PROB = 1.0
-SHOW_SCORE_THRSHOLD = 0.05  # 0.5 only show in tensorboard
+SHOW_SCORE_THRSHOLD = 0.5  # 0.05 only show in tensorboard
 
 FAST_RCNN_NMS_IOU_THRESHOLD = 0.1  # 0.1
 FAST_RCNN_NMS_MAX_BOXES_PER_CLASS = 150 #150
