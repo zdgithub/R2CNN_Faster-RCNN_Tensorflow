@@ -121,10 +121,10 @@ class DataAugmentForOBB():
         d_to_bottom = h - y_max
 
         # random scale the minimum box
-        crop_x_min = int(x_min - random.uniform(4, d_to_left))  # default 0
-        crop_y_min = int(y_min - random.uniform(4, d_to_top))
-        crop_x_max = int(x_max + random.uniform(4, d_to_right))
-        crop_y_max = int(y_max + random.uniform(4, d_to_bottom))
+        crop_x_min = int(x_min - random.uniform(d_to_left/3, d_to_left))  # default 0
+        crop_y_min = int(y_min - random.uniform(d_to_top/3, d_to_top))
+        crop_x_max = int(x_max + random.uniform(d_to_right/4, d_to_right))
+        crop_y_max = int(y_max + random.uniform(d_to_right/4, d_to_bottom))
 
         # ensure don't beyond the border
         crop_x_min = max(0, crop_x_min)
@@ -250,7 +250,7 @@ class DataAugmentForOBB():
             aimg = self._addNoise(img)
             abboxes = bboxes
         elif op.startswith('rotate'):
-            angle = random.choice([-2, 2, -3, 3, -4, 4, -5, 5])
+            angle = random.choice([-4, 4, -5, 5])
             scale = random.uniform(0.8, 1.0)
             aimg, abboxes = self._rotateImg(img, bboxes, angle, scale)
         elif op == 'light':
@@ -283,19 +283,21 @@ def draw_img(save_dir, img_name, img, bboxes=None):
     cv2.imwrite(save_path, img)
 
 
+
 if __name__ == '__main__':
 
-    trans = ['crop1', 'crop2', 'shift1', 'shift2', 'noise', 'rotate1', 'rotate2', 'light', 'flip']  # augment 9 images per img
+    trans = ['crop1', 'shift1', 'rotate', 'light', 'flip']   # augment 9 images per img
+
 
     dataAug = DataAugmentForOBB()
     # VOC dataset
-    src_img_path = r'E:\3AllRBox\VOCdevkit\VOCdevkit_train\tmpJPEGImages'
-    src_xml_path = r'E:\3AllRBox\VOCdevkit\VOCdevkit_train\tmpAnnotation'
+    src_img_path = r'E:\3AllRBox\VOCdevkit\testImages'
+    src_xml_path = r'E:\3AllRBox\VOCdevkit\TranAnnotation'
 
     # save draw_img with bboxes
-    # save_dir = r'E:\3AllRBox\VOCdevkit\VOCdevkit_train\newOutput'
-    aug_dir = r'E:\3AllRBox\VOCdevkit\VOCdevkit_train\Augment\Images'
-    out_xml_path = r'E:\3AllRBox\VOCdevkit\VOCdevkit_train\Augment\Anno'
+    save_dir = r'E:\3AllRBox\VOCdevkit\tmpOutput'
+    aug_dir = r'E:\3AllRBox\VOCdevkit\TranJPEGImages'
+    out_xml_path = r'E:\3AllRBox\VOCdevkit\TranAnnotation'
 
     for file in os.listdir(src_img_path):
 
@@ -304,12 +306,12 @@ if __name__ == '__main__':
         coords = read_xml(xml_path)  # [-1, 8]
 
         # attention: draw_img cache affect the clean img so destroy the following for (draw_img)
-        # img = cv2.imread(img_path)
-        # draw_img(save_dir, file, img, coords)  # draw raw img with bboxes
+        img = cv2.imread(img_path)
+        draw_img(save_dir, file, img, coords)  # draw raw img with bboxes
 
-        for op in trans:
-            img = cv2.imread(img_path)
-            aug_img, aug_bboxes = dataAug.dataAugment(img, coords, op)
-            draw_img(aug_dir, op + '-' + file, aug_img, aug_bboxes)  # save augment img with bboxes
-            generate_xml(op+'-'+file, aug_bboxes, aug_img.shape, out_xml_path)
-            # print('------------------augment ', file, ' finished------------------')
+        # for op in trans:
+        #     img = cv2.imread(img_path)
+        #     aug_img, aug_bboxes = dataAug.dataAugment(img, coords, op)
+        #     draw_img(aug_dir, op+'-'+file, aug_img, [])  # save augment img with bboxes
+        #     generate_xml(op+'-'+file, aug_bboxes, aug_img.shape, out_xml_path)
+        #     # print('------------------augment ', file, ' finished------------------')
