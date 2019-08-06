@@ -16,7 +16,7 @@ from data.io.image_preprocess import short_side_resize_for_inference_data
 from libs.configs import cfgs
 from libs.networks import build_whole_network_my
 from help_utils.tools import *
-from libs.box_utils import draw_box_in_img
+from libs.box_utils import draw_box_in_img, show_box_in_tensor
 from help_utils import tools
 from libs.box_utils import coordinate_convert
 import mylibs
@@ -31,7 +31,7 @@ def inference(det_net, data_dir):
     img_batch = short_side_resize_for_inference_data(img_tensor=img_batch,
                                                      target_shortside_len=cfgs.IMG_SHORT_SIDE_LEN)
 
-    det_boxes_h, det_scores_h, det_category_h, \
+    rois, roi_scores, det_boxes_h, det_scores_h, det_category_h, \
     all_boxes_r, all_scores_r, all_category_r = det_net.build_whole_detection_network(input_img_batch=img_batch,
                                                                                       gtboxes_h_batch=None,
                                                                                       gtboxes_r_batch=None)
@@ -60,33 +60,45 @@ def inference(det_net, data_dir):
             # raw_h, raw_w = raw_img.shape[0], raw_img.shape[1]
 
             start = time.time()
-            resized_img, det_boxes_h_, det_scores_h_, det_category_h_, \
+            resized_img, rois_, roi_scores_, det_boxes_h_, det_scores_h_, det_category_h_, \
             all_boxes_r_, all_scores_r_, all_category_r_ = \
                 sess.run(
-                    [img_batch, det_boxes_h, det_scores_h, det_category_h,
+                    [img_batch, rois, roi_scores, det_boxes_h, det_scores_h, det_category_h,
                      all_boxes_r, all_scores_r, all_category_r],
                     feed_dict={img_plac: raw_img}
                 )
             end = time.time()
 
+	    print('all rois shape:', rois_.shape)
+
             all_boxes_new = all_boxes_r_        # [-1, 5]
             all_scores_new = all_scores_r_      # [-1]
             all_category_new = all_category_r_  # [-1]
             
-	    """
-            # draw all 300 detection boxes
+            print('all dets shape:', all_boxes_new.shape)
+
+	    # draw all rois from proposals
+	    #rois_img_all = mylibs.draw_rois_scores(np.squeeze(resized_img, 0), rois_, roi_scores_)
+	    #score_gre_05 = np.reshape(np.where(np.greater_equal(roi_scores_, 0.5)), -1)
+	    #score_gre_05_rois = rois_[score_gre_05]
+ 	    #score_gre_05_scores = roi_scores_[score_gre_05]
+	    #rois_img_part = mylibs.draw_rois_scores(np.squeeze(resized_img, 0), score_gre_05_rois, score_gre_05_scores)
+
+            	     
+            # draw all 800 detection boxes
 	    all_indices = np.reshape(np.where(np.greater_equal(all_scores_new, cfgs.SHOW_SCORE_THRSHOLD)), -1)
 	    left_boxes = all_boxes_new[all_indices]
 	    left_scores = all_scores_new[all_indices]
 	    left_category = all_category_new[all_indices]
+	    #print('greater than score shape:', left_boxes.shape)
 	    detection_r = draw_box_in_img.draw_rotate_box_cv(np.squeeze(resized_img, 0),
 							     boxes=left_boxes,
    							     labels=left_category,
 							     scores=left_scores,
 							     imgname=a_img_name)
-	    """
+	    
 
-            
+            """
             while True:
                 # nms
                 keep = mylibs.nmsRotate(all_boxes_new, all_scores_new,
@@ -130,14 +142,17 @@ def inference(det_net, data_dir):
             fcontours = contours
             fangles = angles
             fscores = det_scores_new
-
+   
+  	    """
+            """
             # save contours and angles to showSVMdecision scores
   	    detection_r = draw_box_in_img.draw_rotate_box_cv(np.squeeze(resized_img, 0),
 							     boxes=det_boxes_new,
 							     labels=det_category_new,
 							     scores=det_scores_new,
 							     imgname=a_img_name)           
-
+	    """
+            """    
             # final_dtbox[i, :] = [x0, y0, x1, y1, x2, y2, x3, y3, dg, ycenter, from_idx]
             final_dtbox = mylibs.getRboxDegree(fcontours, fangles)
             dt_idx = final_dtbox[:, -1].astype(np.int32)  # sorted
@@ -150,10 +165,11 @@ def inference(det_net, data_dir):
             t_dtbox = mylibs.getRboxDegree(tcontours, tangles)
 
             cobb_img = mylibs.getCobb(t_dtbox, img)
-            
+            """
+             
             save_dir = os.path.join(cfgs.INFERENCE_SAVE_PATH, cfgs.VERSION)
             tools.mkdir(save_dir)
-            cv2.imwrite(save_dir + '/' + a_img_name + '_r.jpg',
+            cv2.imwrite(save_dir + '/' + a_img_name + '_roi.jpg',
                         detection_r)
 
 

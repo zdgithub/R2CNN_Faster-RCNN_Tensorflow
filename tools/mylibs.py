@@ -8,6 +8,44 @@ from sklearn.externals import joblib
 from libs.configs import cfgs
 
 
+def draw_rois_scores(img, boxes, scores):
+    img = img + np.array(cfgs.PIXEL_MEAN)
+    boxes = boxes.astype(np.int64)
+    img = np.array(img * 255 / np.max(img), np.uint8)
+
+    num_of_object = 0
+    for i, box in enumerate(boxes):
+        xmin, ymin, xmax, ymax = box[0], box[1], box[2], box[3]
+
+        score = scores[i]
+        num_of_object += 1
+        cv2.rectangle(img,
+                      pt1=(xmin, ymin),
+                      pt2=(xmax, ymax),
+                      color=(0,0,255),
+                      thickness=2)
+        """cv2.rectangle(img,
+                      pt1=(xmin, ymin),
+                      pt2=(xmin + 120, ymin + 15),
+                      color=(0,0,255),
+                      thickness=-1)
+        cv2.putText(img,
+                    text=str(score),
+                    org=(xmin, ymin + 10),
+                    fontFace=1,
+                    fontScale=1,
+                    thickness=2,
+                    color=(255,0,0))"""
+
+    cv2.putText(img,
+                text=str(num_of_object),
+                org=((img.shape[1]) // 2, (img.shape[0]) // 2),
+                fontFace=3,
+                fontScale=3,
+                color=(0, 255, 0))
+    return img
+
+
 def getRboxDegree(contours, angles):
     n = contours.shape[0]
     dtbox = np.zeros((n, 11))
@@ -122,7 +160,7 @@ def svmPred(fuv, features):
     for k in range(n):
         j = int(decision[k, 0])
         pre = decision[k, 1]
-        if pre < -1.1:    # -1.2 -0.99
+        if pre < -0.99:    # -1.2 -1.1
             curH = features[j, 0]
             preH = features[j - 1, 0]
             curY = features[j, 4]
@@ -212,18 +250,19 @@ def draw_contour_box(img, contours, angles, scores):
 
     n = contours.shape[0]
     delete_idx = []
+    delete_idx.append(0)
+    delete_idx.append(n-1)
 
     for i, rect in enumerate(contours):
+        if (i==0) or (i==(n-1)):
+	    continue
         rect = np.int0(rect)
         if scores[i] >= 0.98:
             cv2.drawContours(img, [rect], -1, (0, 0, 255), 1)  # red
         elif scores[i] >= 0.9:
             cv2.drawContours(img, [rect], -1, (255, 0, 0), 1)  # blue
         else:
-            if (i != 0) and (i != n - 1):
-                cv2.drawContours(img, [rect], -1, (0, 255, 0), 1)  # green
-	    else:
-		delete_idx.append(i)
+            cv2.drawContours(img, [rect], -1, (0, 255, 0), 1)  # green
 
     #contours = np.array(contours)
     #angles = np.array(angles)

@@ -604,7 +604,7 @@ class DetectionNetwork(object):
                                                                                           bbox_ppred=bbox_pred_r,
                                                                                           scores=cls_prob_r,
                                                                                           img_shape=img_shape)
-            return final_boxes_h, final_scores_h, final_category_h, all_boxes_r, all_scores_r, all_category_r
+            return rois, roi_scores, final_boxes_h, final_scores_h, final_category_h, all_boxes_r, all_scores_r, all_category_r
         else:
             '''
             when trian. We need build Loss
