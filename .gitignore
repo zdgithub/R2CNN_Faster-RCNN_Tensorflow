@@ -103,3 +103,8 @@ ENV/
 .mypy_cache/
 
 .pyc
+help_utils/h_hist.jpg
+help_utils/intensity_hist.py
+help_utils/resize.jpg
+help_utils/v_hist3.jpg
+help_utils/xray.jpg
