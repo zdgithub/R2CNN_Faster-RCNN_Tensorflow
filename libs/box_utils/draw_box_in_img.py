@@ -200,8 +200,8 @@ def draw_rotate_box_cv(img, boxes, labels, scores, imgname):
     if not os.path.exists(anglesPath):
 	os.makedirs(anglesPath)
 
-    savepath = os.path.join(contoursPath, imgname+'.mat')
-    saveangle = os.path.join(anglesPath, imgname+'.mat')
+    #savepath = os.path.join(contoursPath, imgname+'.mat')
+    #saveangle = os.path.join(anglesPath, imgname+'.mat')
     
     contours = []
     angles=[]
@@ -230,10 +230,10 @@ def draw_rotate_box_cv(img, boxes, labels, scores, imgname):
             category = LABEl_NAME_MAP[label]
 
             #show score of each bone
-            """if scores is not None:
+            '''if scores is not None:
                 cv2.rectangle(img,
                               pt1=(x_c, y_c),
-                              pt2=(x_c + 120, y_c + 15),
+                              pt2=(x_c + 120, y_c + 11),
                               color=color,
                               thickness=-1)
                 cv2.putText(img,
@@ -242,7 +242,7 @@ def draw_rotate_box_cv(img, boxes, labels, scores, imgname):
                             fontFace=1,
                             fontScale=1,
                             thickness=2,
-                            color=(color[1], color[2], color[0]))"""
+                            color=(255, 255, 0))'''
             #else:
             #     cv2.rectangle(img,
             #                   pt1=(x_c, y_c),
@@ -256,14 +256,14 @@ def draw_rotate_box_cv(img, boxes, labels, scores, imgname):
             #                 fontScale=1,
             #                 thickness=2,
             #                 color=(color[1], color[2], color[0]))
-    """cv2.putText(img,
+    cv2.putText(img,
                 text=str(num_of_object),
                 org=((img.shape[1]) // 2, (img.shape[0]) // 2),
                 fontFace=3,
-                fontScale=1,
-                color=(255, 0, 0))"""
-    sio.savemat(savepath, {'contours':contours})
-    sio.savemat(saveangle, {'angles':angles})
+                fontScale=3,
+                color=(0, 255, 255))
+    #sio.savemat(savepath, {'contours':contours})
+    #sio.savemat(saveangle, {'angles':angles})
     return img
 
 

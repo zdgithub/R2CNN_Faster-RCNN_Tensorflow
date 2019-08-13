@@ -8,6 +8,73 @@ from sklearn.externals import joblib
 from libs.configs import cfgs
 
 
+def draw_r2cnn_box(img, boxes, labels, scores):
+    img = img + np.array(cfgs.PIXEL_MEAN)
+    labels = labels.astype(np.int32)
+    img = np.array(img * 255 / np.max(img), np.uint8)
+
+    num_of_object = 0
+    for i, box in enumerate(boxes):
+        box = np.array(box)
+        x1, y1, x2, y2, h = box[0], box[1], box[2], box[3], box[4]
+        # get four points
+        if abs(x1 - x2) < 1e-6:
+            x3 = x2 + h
+            y3 = y2
+        else:
+            k1 = (y2 - y1) / (x2 - x1)
+            if abs(k1) < 0.01:  # tan(pi/180)
+                x3 = x2
+                y3 = y2 + h
+            else:
+                kk = -1.0 / k1
+                bias = np.sqrt(h * h / (1 + kk * kk))
+                bias = bias if kk > 0 else -bias
+                x3 = x2 + bias
+                y3 = y2 + kk * (x3 - x2)
+
+        x4 = x1 + x3 - x2
+        y4 = y1 + y3 - y2
+
+        label = labels[i]
+        if label != 0:
+            num_of_object += 1
+            tmp = np.int0([x1, y1, x2, y2, x3, y3, x4, y4]).reshape([4, 2])
+            rect2 = cv2.minAreaRect(tmp)
+            x_c, y_c = np.int0(rect2[0][0]), np.int0(rect2[0][1])
+
+            rect = cv2.boxPoints(rect2)
+            rect = np.int0(rect)
+            if scores[i] >= 0.9:
+                cv2.drawContours(img, [rect], -1, (0, 0, 255), 1)  # red
+            elif scores[i] >= 0.8:
+                cv2.drawContours(img, [rect], -1, (255, 0, 0), 1)  # blue
+            else:
+                cv2.drawContours(img, [rect], -1, (0, 255, 0), 1)  # green
+
+            if scores is not None:
+                cv2.rectangle(img,
+                              pt1=(x_c, y_c),
+                              pt2=(x_c + 120, y_c + 15),
+                              color=(0,0,255),
+                              thickness=-1)
+                cv2.putText(img,
+                            text=str(scores[i]),
+                            org=(x_c, y_c+10),
+                            fontFace=1,
+                            fontScale=1,
+                            thickness=2,
+                            color=(255,255,0))
+
+    cv2.putText(img,
+                text=str(num_of_object),
+                org=((img.shape[1]) // 2, (img.shape[0]) // 2),
+                fontFace=3,
+                fontScale=3,
+                color=(0, 255, 255))
+    return img
+
+
 def draw_rois_scores(img, boxes, scores):
     img = img + np.array(cfgs.PIXEL_MEAN)
     boxes = boxes.astype(np.int64)
@@ -22,7 +89,7 @@ def draw_rois_scores(img, boxes, scores):
         cv2.rectangle(img,
                       pt1=(xmin, ymin),
                       pt2=(xmax, ymax),
-                      color=(0,0,255),
+                      color=(0, 0, 255),
                       thickness=2)
         """cv2.rectangle(img,
                       pt1=(xmin, ymin),
@@ -160,7 +227,7 @@ def svmPred(fuv, features):
     for k in range(n):
         j = int(decision[k, 0])
         pre = decision[k, 1]
-        if pre < -0.99:    # -1.2 -1.1
+        if pre < -0.99:  # -1.2 -1.1
             curH = features[j, 0]
             preH = features[j - 1, 0]
             curY = features[j, 4]
@@ -251,11 +318,11 @@ def draw_contour_box(img, contours, angles, scores):
     n = contours.shape[0]
     delete_idx = []
     delete_idx.append(0)
-    delete_idx.append(n-1)
+    delete_idx.append(n - 1)
 
     for i, rect in enumerate(contours):
-        if (i==0) or (i==(n-1)):
-	    continue
+        if (i == 0) or (i == (n - 1)):
+            continue
         rect = np.int0(rect)
         if scores[i] >= 0.98:
             cv2.drawContours(img, [rect], -1, (0, 0, 255), 1)  # red
@@ -264,8 +331,8 @@ def draw_contour_box(img, contours, angles, scores):
         else:
             cv2.drawContours(img, [rect], -1, (0, 255, 0), 1)  # green
 
-    #contours = np.array(contours)
-    #angles = np.array(angles)
+    # contours = np.array(contours)
+    # angles = np.array(angles)
     contours = np.delete(contours, delete_idx, axis=0)
     angles = np.delete(angles, delete_idx, axis=0)
 

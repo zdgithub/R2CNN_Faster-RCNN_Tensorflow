@@ -14,7 +14,7 @@ import time
 from libs.networks import build_whole_network
 from data.io.read_tfrecord import next_batch
 from help_utils import tools
-from libs.box_utils.coordinate_convert import back_forward_convert
+from libs.box_utils.coordinate_convert import *
 from libs.box_utils.boxes_utils import get_horizen_minAreaRectangle
 from libs.box_utils.show_box_in_tensor import *
 
@@ -36,10 +36,17 @@ def train():
         gtboxes_and_label = tf.py_func(back_forward_convert,
                                        inp=[tf.squeeze(gtboxes_and_label_batch, 0)],
                                        Tout=tf.float32)
-        gtboxes_and_label = tf.reshape(gtboxes_and_label, [-1, 6])
+        gtboxes_and_label = tf.reshape(gtboxes_and_label, [-1, 6])  # [x_c, y_c, w, h, theta, (label)]
+
+        gtboxes_and_label_my = tf.py_func(my_convert,
+                                          inp=[tf.squeeze(gtboxes_and_label_batch, 0)],
+                                          Tout=tf.float32)
+        gtboxes_and_label_my = tf.reshape(gtboxes_and_label_my, [-1, 6])  # [x1, y1, x2, y2, h, label]
 
         gtboxes_and_label_AreaRectangle = get_horizen_minAreaRectangle(gtboxes_and_label)
         gtboxes_and_label_AreaRectangle = tf.reshape(gtboxes_and_label_AreaRectangle, [-1, 5])
+
+
 
     with tf.name_scope('draw_gtboxes'):
         gtboxes_in_img = draw_box_with_color(img_batch, tf.reshape(gtboxes_and_label_AreaRectangle, [-1, 5])[:, :-1],
@@ -60,7 +67,7 @@ def train():
         final_boxes_h, final_scores_h, final_category_h, \
         final_boxes_r, final_scores_r, final_category_r, loss_dict = faster_rcnn.build_whole_detection_network(
             input_img_batch=img_batch,
-            gtboxes_r_batch=gtboxes_and_label,
+            gtboxes_r_batch=gtboxes_and_label_my,
             gtboxes_h_batch=gtboxes_and_label_AreaRectangle)
 
     dets_in_img = draw_boxes_with_categories_and_scores(img_batch=img_batch,
@@ -68,8 +75,9 @@ def train():
                                                         labels=final_category_h,
                                                         scores=final_scores_h)
 
+    final_boxes_r_my = tf.py_func(my_getnms_area, inp=[final_boxes_r], Tout=tf.float32)
     dets_rotate_in_img = draw_boxes_with_categories_and_scores_rotate(img_batch=img_batch,
-                                                                      boxes=final_boxes_r,
+                                                                      boxes=final_boxes_r_my,
                                                                       labels=final_category_r,
                                                                       scores=final_scores_r)
 

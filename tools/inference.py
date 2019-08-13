@@ -18,8 +18,8 @@ from libs.networks import build_whole_network
 from help_utils.tools import *
 from libs.box_utils import draw_box_in_img
 from help_utils import tools
-from libs.box_utils import coordinate_convert
-
+from libs.box_utils.coordinate_convert import my_getnms_area
+import mylibs
 
 def inference(det_net, data_dir):
 
@@ -52,9 +52,10 @@ def inference(det_net, data_dir):
             print('restore model')
 
         imgs = os.listdir(data_dir)
-        for i, a_img_name in enumerate(imgs):
+        save_dir = os.path.join(cfgs.INFERENCE_SAVE_PATH, cfgs.VERSION)
+        tools.mkdir(save_dir)
 
-            # f = open('./res_icdar_r/res_{}.txt'.format(a_img_name.split('.jpg')[0]), 'w')
+        for i, a_img_name in enumerate(imgs):
 
             raw_img = cv2.imread(os.path.join(data_dir,
                                               a_img_name))
@@ -69,25 +70,19 @@ def inference(det_net, data_dir):
                     feed_dict={img_plac: raw_img}
                 )
             end = time.time()
-
-            # res_r = coordinate_convert.forward_convert(det_boxes_r_, False)
-            # res_r = np.array(res_r, np.int32)
-            # for r in res_r:
-            #     f.write('{},{},{},{},{},{},{},{}\n'.format(r[0], r[1], r[2], r[3],
-            #                                                r[4], r[5], r[6], r[7]))
-            # f.close()
+            # det_boxes_r_ [x1, y1, x2, y2, h]
 
             det_detections_h = draw_box_in_img.draw_box_cv(np.squeeze(resized_img, 0),
                                                            boxes=det_boxes_h_,
                                                            labels=det_category_h_,
                                                            scores=det_scores_h_)
-            det_detections_r = draw_box_in_img.draw_rotate_box_cv(np.squeeze(resized_img, 0),
+            #my_det_boxes = my_getnms_area(det_boxes_r_)
+            det_detections_r = mylibs.draw_r2cnn_box(np.squeeze(resized_img, 0),
                                                                   boxes=det_boxes_r_,
                                                                   labels=det_category_r_,
-                                                                  scores=det_scores_r_,
-                                                                  imgname=a_img_name)
-            save_dir = os.path.join(cfgs.INFERENCE_SAVE_PATH, cfgs.VERSION)
-            tools.mkdir(save_dir)
+                                                                  scores=det_scores_r_)
+
+
             #cv2.imwrite(save_dir + '/' + a_img_name + '_h.jpg',
             #            det_detections_h)
             cv2.imwrite(save_dir + '/' + a_img_name + '_r.jpg',

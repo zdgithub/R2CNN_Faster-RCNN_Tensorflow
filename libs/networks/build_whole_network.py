@@ -19,7 +19,7 @@ from libs.detection_oprations.proposal_opr import postprocess_rpn_proposals
 from libs.detection_oprations.anchor_target_layer_without_boxweight import anchor_target_layer
 from libs.detection_oprations.proposal_target_layer import proposal_target_layer
 from libs.box_utils import nms_rotate
-
+from libs.box_utils.coordinate_convert import my_getnms_area
 
 class DetectionNetwork(object):
 
@@ -134,18 +134,20 @@ class DetectionNetwork(object):
                 tmp_encoded_box = bbox_pred_list[i]
                 tmp_score = score_list[i]
                 tmp_decoded_boxes = encode_and_decode.decode_boxes_rotate(encode_boxes=tmp_encoded_box,
-                                                                          reference_boxes=rois,
-                                                                          scale_factors=cfgs.ROI_SCALE_FACTORS)
-                # tmp_decoded_boxes = encode_and_decode.decode_boxes(boxes=rois,
-                #                                                    deltas=tmp_encoded_box,
-                #                                                    scale_factor=cfgs.ROI_SCALE_FACTORS)
+                                                                           reference_boxes=rois,
+                                                                           scale_factors=cfgs.ROI_SCALE_FACTORS)
+                # tmp_decoded_boxes [-1,5] [x1, y1, x2, y2, h]
+                # tmp_decoed_areas [x_c, y_c, w, h, theta]
+                tmp_decoded_areas = tf.py_func(my_getnms_area, inp=[tmp_decoded_boxes], Tout=tf.float32)
+                tmp_decoded_areas = tf.reshape(tmp_decoded_areas, [-1, 5])
+
 
                 # 2. clip to img boundaries
                 # tmp_decoded_boxes = boxes_utils.clip_boxes_to_img_boundaries(decode_boxes=tmp_decoded_boxes,
                 #                                                              img_shape=img_shape)
 
                 # 3. NMS
-                keep = nms_rotate.nms_rotate(decode_boxes=tmp_decoded_boxes,
+                keep = nms_rotate.nms_rotate(decode_boxes=tmp_decoded_areas,
                                              scores=tmp_score,
                                              iou_threshold=cfgs.FAST_RCNN_NMS_IOU_THRESHOLD,
                                              max_output_size=cfgs.FAST_RCNN_NMS_MAX_BOXES_PER_CLASS,
