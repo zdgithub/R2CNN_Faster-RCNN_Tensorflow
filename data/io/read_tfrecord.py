@@ -53,8 +53,8 @@ def read_and_prepocess_single_img(filename_queue, shortside_len, is_training):
     if is_training:
         img, gtboxes_and_label = image_preprocess.short_side_resize(img_tensor=img, gtboxes_and_label=gtboxes_and_label,
                                                                     target_shortside_len=shortside_len)
-        img, gtboxes_and_label = image_preprocess.random_flip_left_right(img_tensor=img,
-                                                                         gtboxes_and_label=gtboxes_and_label)
+        '''img, gtboxes_and_label = image_preprocess.random_flip_left_right(img_tensor=img,
+                                                                         gtboxes_and_label=gtboxes_and_label)'''
 
     else:
         img, gtboxes_and_label = image_preprocess.short_side_resize(img_tensor=img, gtboxes_and_label=gtboxes_and_label,
