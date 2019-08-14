@@ -76,11 +76,12 @@ def inference(det_net, data_dir):
                                                            boxes=det_boxes_h_,
                                                            labels=det_category_h_,
                                                            scores=det_scores_h_)
+
             #my_det_boxes = my_getnms_area(det_boxes_r_)
             det_detections_r = mylibs.draw_r2cnn_box(np.squeeze(resized_img, 0),
-                                                                  boxes=det_boxes_r_,
-                                                                  labels=det_category_r_,
-                                                                  scores=det_scores_r_)
+                                                     boxes=det_boxes_r_,
+                                                     labels=det_category_r_,
+                                                     scores=det_scores_r_)
 
 
             #cv2.imwrite(save_dir + '/' + a_img_name + '_h.jpg',

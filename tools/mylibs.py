@@ -45,12 +45,18 @@ def draw_r2cnn_box(img, boxes, labels, scores):
 
             rect = cv2.boxPoints(rect2)
             rect = np.int0(rect)
-            if scores[i] >= 0.9:
-                cv2.drawContours(img, [rect], -1, (0, 0, 255), 1)  # red
-            elif scores[i] >= 0.8:
-                cv2.drawContours(img, [rect], -1, (255, 0, 0), 1)  # blue
-            else:
-                cv2.drawContours(img, [rect], -1, (0, 255, 0), 1)  # green
+
+            color = (0, 0, 255)
+            cv2.drawContours(img, [rect], -1, color, 1)
+            cv2.line(img, (np.int0(x1), np.int0(y1)), (np.int0(x2), np.int0(y2)), (255, 0, 0), 1)
+            cv2.circle(img, (np.int0(x1), np.int0(y1)), 1, (255, 0, 0), 4)
+
+            # if scores[i] >= 0.9:
+            #     cv2.drawContours(img, [rect], -1, (0, 0, 255), 1)  # red
+            # elif scores[i] >= 0.8:
+            #     cv2.drawContours(img, [rect], -1, (255, 0, 0), 1)  # blue
+            # else:
+            #     cv2.drawContours(img, [rect], -1, (0, 255, 0), 1)  # green
 
             if scores is not None:
                 cv2.rectangle(img,
@@ -64,7 +70,7 @@ def draw_r2cnn_box(img, boxes, labels, scores):
                             fontFace=1,
                             fontScale=1,
                             thickness=2,
-                            color=(255,255,0))
+                            color=(0,255,0))
 
     cv2.putText(img,
                 text=str(num_of_object),
