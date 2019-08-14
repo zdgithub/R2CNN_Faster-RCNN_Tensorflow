@@ -250,9 +250,9 @@ class DataAugmentForOBB():
             aimg = self._addNoise(img)
             abboxes = bboxes
         elif op.startswith('rotate'):
-            angle = random.choice([-4, 4, -5, 5])
-            scale = random.uniform(0.8, 1.0)
-            aimg, abboxes = self._rotateImg(img, bboxes, angle, scale)
+            angle = random.randint(-20, 20)
+            #scale = random.uniform(0.8, 1.0)
+            aimg, abboxes = self._rotateImg(img, bboxes, angle)
         elif op == 'light':
             aimg = self._changeLight(img)
             abboxes = bboxes
@@ -286,18 +286,18 @@ def draw_img(save_dir, img_name, img, bboxes=None):
 
 if __name__ == '__main__':
 
-    trans = ['crop1', 'shift1', 'rotate', 'light', 'flip']   # augment 9 images per img
+    trans = ['crop', 'shift', 'rotate1', 'rotate2']   # augment 9 images per img
 
 
     dataAug = DataAugmentForOBB()
     # VOC dataset
-    src_img_path = r'E:\3AllRBox\VOCdevkit\testImages'
-    src_xml_path = r'E:\3AllRBox\VOCdevkit\TranAnnotation'
+    src_img_path = r'E:\3AllRBox\VOCdevkit\ChabuduoJPEGImages'
+    src_xml_path = r'E:\3AllRBox\VOCdevkit\ChabuduoAnnotation'
 
     # save draw_img with bboxes
     save_dir = r'E:\3AllRBox\VOCdevkit\tmpOutput'
-    aug_dir = r'E:\3AllRBox\VOCdevkit\TranJPEGImages'
-    out_xml_path = r'E:\3AllRBox\VOCdevkit\TranAnnotation'
+    aug_dir = r'E:\3AllRBox\VOCdevkit\RandJPEGImages'
+    out_xml_path = r'E:\3AllRBox\VOCdevkit\RandAnnotation'
 
     for file in os.listdir(src_img_path):
 
@@ -306,12 +306,12 @@ if __name__ == '__main__':
         coords = read_xml(xml_path)  # [-1, 8]
 
         # attention: draw_img cache affect the clean img so destroy the following for (draw_img)
-        img = cv2.imread(img_path)
-        draw_img(save_dir, file, img, coords)  # draw raw img with bboxes
+        # img = cv2.imread(img_path)
+        # draw_img(save_dir, file, img, coords)  # draw raw img with bboxes
 
-        # for op in trans:
-        #     img = cv2.imread(img_path)
-        #     aug_img, aug_bboxes = dataAug.dataAugment(img, coords, op)
-        #     draw_img(aug_dir, op+'-'+file, aug_img, [])  # save augment img with bboxes
-        #     generate_xml(op+'-'+file, aug_bboxes, aug_img.shape, out_xml_path)
-        #     # print('------------------augment ', file, ' finished------------------')
+        for op in trans:
+            img = cv2.imread(img_path)
+            aug_img, aug_bboxes = dataAug.dataAugment(img, coords, op)
+            draw_img(aug_dir, op+'-'+file, aug_img, [])  # save augment img with bboxes
+            generate_xml(op+'-'+file, aug_bboxes, aug_img.shape, out_xml_path)
+            # print('------------------augment ', file, ' finished------------------')

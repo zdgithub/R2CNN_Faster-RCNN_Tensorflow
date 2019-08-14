@@ -52,8 +52,8 @@ def train():
         gtboxes_in_img = draw_box_with_color(img_batch, tf.reshape(gtboxes_and_label_AreaRectangle, [-1, 5])[:, :-1],
                                              text=tf.shape(gtboxes_and_label_AreaRectangle)[0])
 
-        gtboxes_rotate_in_img = draw_box_with_color_rotate(img_batch, tf.reshape(gtboxes_and_label, [-1, 6])[:, :-1],
-                                                           text=tf.shape(gtboxes_and_label)[0])
+        gtboxes_rotate_in_img = draw_gtbox_my(img_batch, tf.reshape(gtboxes_and_label_my, [-1, 6])[:, :-1],
+                                              text=tf.shape(gtboxes_and_label)[0])
 
     biases_regularizer = tf.no_regularizer
     weights_regularizer = tf.contrib.layers.l2_regularizer(cfgs.WEIGHT_DECAY)
@@ -75,11 +75,11 @@ def train():
                                                         labels=final_category_h,
                                                         scores=final_scores_h)
 
-    final_boxes_r_my = tf.py_func(my_getnms_area, inp=[final_boxes_r], Tout=tf.float32)
-    dets_rotate_in_img = draw_boxes_with_categories_and_scores_rotate(img_batch=img_batch,
-                                                                      boxes=final_boxes_r_my,
-                                                                      labels=final_category_r,
-                                                                      scores=final_scores_r)
+    #final_boxes_r_my = tf.py_func(my_getnms_area, inp=[final_boxes_r], Tout=tf.float32)
+    dets_rotate_in_img = draw_boxes_rotate_my(img_batch=img_batch,
+                                              boxes=final_boxes_r,
+                                              labels=final_category_r,
+                                              scores=final_scores_r)
 
     # ----------------------------------------------------------------------------------------------------build loss
     weight_decay_loss = tf.add_n(slim.losses.get_regularization_losses())
