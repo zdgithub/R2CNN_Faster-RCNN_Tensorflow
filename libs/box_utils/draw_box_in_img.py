@@ -212,20 +212,21 @@ def draw_rotate_box_cv(img, boxes, labels, scores, imgname):
         label = labels[i]
         if label != 0:
             num_of_object += 1
-            # color = (np.random.randint(255), np.random.randint(255), np.random.randint(255))
-            color = (0, 0, 255)
+            color = (np.random.randint(255), np.random.randint(255), np.random.randint(255))
+            #color = (0, 0, 255)
             rect = ((x_c, y_c), (w, h), theta)
             rect = cv2.boxPoints(rect)
             contours.append(rect)
 	    angles.append(theta)
 
             rect = np.int0(rect)
-	    if scores[i] >= 0.98:
+	    '''if scores[i] >= 0.98:
 	        cv2.drawContours(img, [rect], -1, color, 1)      #red
 	    elif scores[i] >= 0.9:
 	        cv2.drawContours(img, [rect], -1, (255,0,0), 1)  #blue
 	    else:
-		cv2.drawContours(img, [rect], -1, (0,255,0), 1)  #green
+		cv2.drawContours(img, [rect], -1, (255,0,0), 1)  #green'''
+            cv2.drawContours(img, [rect], -1, color, 1)
 
             category = LABEl_NAME_MAP[label]
 
@@ -261,7 +262,7 @@ def draw_rotate_box_cv(img, boxes, labels, scores, imgname):
                 org=((img.shape[1]) // 2, (img.shape[0]) // 2),
                 fontFace=3,
                 fontScale=3,
-                color=(0, 255, 255))
+                color=(0, 0, 255))
     #sio.savemat(savepath, {'contours':contours})
     #sio.savemat(saveangle, {'angles':angles})
     return img
