@@ -80,9 +80,9 @@ def parse_rec(filename):
     obj_struct['truncated'] = int(obj.find('truncated').text)
     obj_struct['difficult'] = int(obj.find('difficult').text)
     bbox = obj.find('bndbox')
-    rbox = [float(bbox.find('x0').text), float(bbox.find('y0').text), float(bbox.find('x1').text),
-            float(bbox.find('y1').text), float(bbox.find('x2').text), float(bbox.find('y2').text),
-            float(bbox.find('x3').text), float(bbox.find('y3').text)]
+    rbox = [float(bbox.find('x1').text), float(bbox.find('y1').text), float(bbox.find('x2').text),
+            float(bbox.find('y2').text), float(bbox.find('x3').text), float(bbox.find('y3').text),
+            float(bbox.find('x4').text), float(bbox.find('y4').text)]
     obj_struct['bbox'] = [min(rbox[::2]),
                           min(rbox[1::2]),
                           max(rbox[::2]),

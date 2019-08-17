@@ -21,6 +21,7 @@ from libs.box_utils import draw_box_in_img
 from libs.box_utils.coordinate_convert import forward_convert, back_forward_convert
 from libs.label_name_dict.pascal_dict import LABEl_NAME_MAP, NAME_LABEL_MAP
 from help_utils import tools
+from libs.box_utils.coordinate_convert import my_getnms_area
 
 
 def eval_with_plac(img_dir, det_net, num_imgs, image_ext, draw_imgs=False):
@@ -31,7 +32,7 @@ def eval_with_plac(img_dir, det_net, num_imgs, image_ext, draw_imgs=False):
     img_batch = img_batch - tf.constant(cfgs.PIXEL_MEAN)
     img_batch = short_side_resize_for_inference_data(img_tensor=img_batch,
                                                      target_shortside_len=cfgs.IMG_SHORT_SIDE_LEN,
-                                                     is_resize=False)
+                                                     is_resize=True)
 
     det_boxes_h, det_scores_h, det_category_h, \
     det_boxes_r, det_scores_r, det_category_r = det_net.build_whole_detection_network(
@@ -95,10 +96,10 @@ def eval_with_plac(img_dir, det_net, num_imgs, image_ext, draw_imgs=False):
 
             if det_boxes_r_.shape[0] != 0:
                 resized_h, resized_w = resized_img.shape[1], resized_img.shape[2]
-                det_boxes_r_ = forward_convert(det_boxes_r_, False)
-                det_boxes_r_[:, 0::2] *= (raw_w / resized_w)
-                det_boxes_r_[:, 1::2] *= (raw_h / resized_h)
-                det_boxes_r_ = back_forward_convert(det_boxes_r_, False)
+                det_boxes_r_[:, 0:4:2] *= (raw_w / resized_w)
+                det_boxes_r_[:, 1:4:2] *= (raw_h / resized_h)
+                det_boxes_r_[:, -1] *= (raw_h / resized_h)
+            det_boxes_r_ = my_getnms_area(det_boxes_r_)
 
             x_c, y_c, w, h, theta = det_boxes_r_[:, 0], det_boxes_r_[:, 1], det_boxes_r_[:, 2], \
                                     det_boxes_r_[:, 3], det_boxes_r_[:, 4]
@@ -107,6 +108,8 @@ def eval_with_plac(img_dir, det_net, num_imgs, image_ext, draw_imgs=False):
             xmax = xmax * raw_w / resized_w
             ymin = ymin * raw_h / resized_h
             ymax = ymax * raw_h / resized_h
+
+	    #print('raw_h, resized_h:', raw_h, resized_h)
 
             boxes_h = np.transpose(np.stack([xmin, ymin, xmax, ymax]))
             boxes_r = np.transpose(np.stack([x_c, y_c, w, h, theta]))
@@ -131,7 +134,7 @@ def eval(num_imgs, img_dir, image_ext, test_annotation_path):
 
     faster_rcnn = build_whole_network.DetectionNetwork(base_network_name=cfgs.NET_NAME,
                                                        is_training=False)
-    eval_with_plac(img_dir=img_dir, det_net=faster_rcnn, num_imgs=num_imgs, image_ext=image_ext, draw_imgs=True)
+    eval_with_plac(img_dir=img_dir, det_net=faster_rcnn, num_imgs=num_imgs, image_ext=image_ext, draw_imgs=False)
 
     with open(cfgs.VERSION + '_detections_h.pkl') as f1:
         all_boxes_h = pickle.load(f1)
@@ -165,13 +168,13 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train a R2CNN network')
     parser.add_argument('--img_dir', dest='img_dir',
                         help='images path',
-                        default='/mnt/USBB/gx/DOTA/DOTA_clip/val/images/', type=str)
+                        default='./validSet/JPEGImages/', type=str)
     parser.add_argument('--image_ext', dest='image_ext',
                         help='image format',
-                        default='.png', type=str)
+                        default='.jpg', type=str)
     parser.add_argument('--test_annotation_path', dest='test_annotation_path',
                         help='test annotate path',
-                        default=cfgs.TEST_ANNOTATION_PATH, type=str)
+                        default='./validSet/Annotation/', type=str)
     parser.add_argument('--gpu', dest='gpu',
                         help='gpu index',
                         default='0', type=str)
