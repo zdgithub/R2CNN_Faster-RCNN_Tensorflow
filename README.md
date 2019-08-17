@@ -4,7 +4,8 @@
 This is a tensorflow re-implementation of [R2CNN: Rotational Region CNN for Orientation Robust Scene Text Detection](https://arxiv.org/abs/1706.09579).      
 
 ## Addition
-This project has been modified from the forked source [R2CNN_Faster_RCNN_Tensorflow](https://github.com/DetectionTeamUCAS/Faster-RCNN_Tensorflow) to be consistant with the [R2CNN](https://arxiv.org/abs/1706.09579) paper.
+This project has been modified from the forked source [R2CNN_Faster-RCNN_Tensorflow](https://github.com/DetectionTeamUCAS/R2CNN_Faster-RCNN_Tensorflow) to be consistant with the [R2CNN](https://arxiv.org/abs/1706.09579) paper.
+For example, the bounding box coordinate is `(x1, y1, x2, y2, h)` instead of `(x_c, y_c, w, h, theta)`.
 
 ## Requirements
 1、tensorflow >= 1.2     
@@ -13,19 +14,10 @@ This project has been modified from the forked source [R2CNN_Faster_RCNN_Tensorf
 4、[opencv(cv2)](https://pypi.org/project/opencv-python/) 
 
 ## Download Model
-1、please download [resnet50_v1](http://download.tensorflow.org/models/resnet_v1_50_2016_08_28.tar.gz)、[resnet101_v1](http://download.tensorflow.org/models/resnet_v1_101_2016_08_28.tar.gz) pre-trained models on Imagenet, put it to data/pretrained_weights.     
-2、please download [mobilenet_v2](https://storage.googleapis.com/mobilenet_v2/checkpoints/mobilenet_v2_1.0_224.tgz) pre-trained model on Imagenet, put it to data/pretrained_weights/mobilenet.      
-3、please download [trained model](https://github.com/DetectionTeamUCAS/Models/tree/master/R2CNN_Faster-RCNN_Tensorflow) by this project, put it to output/trained_weights.
+please download [resnet50_v1](http://download.tensorflow.org/models/resnet_v1_50_2016_08_28.tar.gz)、[resnet101_v1](http://download.tensorflow.org/models/resnet_v1_101_2016_08_28.tar.gz) pre-trained models on Imagenet, put it to data/pretrained_weights.     
 
 ## Data Prepare
-1、please download [DOTA](https://captain-whu.github.io/DOTA/dataset.html)      
-2、crop data, reference:
-```  
-cd $PATH_ROOT/data/io/DOTA
-python train_crop.py 
-python val_crop.py
-```
-3、data format
+
 ```
 ├── VOCdevkit
 │   ├── VOCdevkit_train
@@ -47,36 +39,17 @@ cd $PATH_ROOT/libs/box_utils/cython_utils
 python setup.py build_ext --inplace
 ```
 
-## Demo
-
-**Select a configuration file in the folder (libs/configs/) and copy its contents into cfgs.py, then download the corresponding [weights](https://github.com/DetectionTeamUCAS/Models/tree/master/R2CNN_Faster-RCNN_Tensorflow).** 
-
-### DOTA     
-
-```   
-python demo_rh.py --src_folder='/PATH/TO/DOTA/IMAGES_ORIGINAL/' 
-                  --image_ext='.png' 
-                  --des_folder='/PATH/TO/SAVE/RESULTS/' 
-                  --save_res=False
-                  --gpu='0'
-```
-
-### FDDB
-```   
-python camera_demo.py --gpu='0'
-```
-
 ## Eval
 ```  
-python eval.py --img_dir='/PATH/TO/DOTA/IMAGES/' 
-               --image_ext='.png' 
-               --test_annotation_path='/PATH/TO/TEST/ANNOTATION/'
+python eval.py --img_dir='/PATH/TO/IMAGES/' 
+               --image_ext='.jpg' 
+               --test_annotation_path='/PATH/TO/ANNOTATION/'
                --gpu='0'
 ```
 
 ## Inference
 ```  
-python inference.py --data_dir='/PATH/TO/DOTA/IMAGES_CROP/'      
+python inference.py --data_dir='/PATH/TO/IMAGES/'      
                     --gpu='0'
 ```
 
