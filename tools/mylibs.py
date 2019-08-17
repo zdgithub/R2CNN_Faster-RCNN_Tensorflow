@@ -58,7 +58,7 @@ def draw_r2cnn_box(img, boxes, labels, scores):
             # else:
             #     cv2.drawContours(img, [rect], -1, (0, 255, 0), 1)  # green
 
-            if scores is not None:
+            '''if scores is not None:
                 cv2.rectangle(img,
                               pt1=(x_c, y_c),
                               pt2=(x_c + 120, y_c + 15),
@@ -70,7 +70,7 @@ def draw_r2cnn_box(img, boxes, labels, scores):
                             fontFace=1,
                             fontScale=1,
                             thickness=2,
-                            color=(0,255,0))
+                            color=(0,255,0))'''
 
     cv2.putText(img,
                 text=str(num_of_object),
@@ -78,6 +78,95 @@ def draw_r2cnn_box(img, boxes, labels, scores):
                 fontFace=3,
                 fontScale=3,
                 color=(0, 255, 255))
+    return img
+
+
+def get_r2cnn_degree(img, boxes):
+
+    n = boxes.shape[0]
+    dtbox = np.zeros((n, 7))
+
+    for i, box in enumerate(boxes):
+        box = np.array(box)
+        x1, y1, x2, y2, h = box[0], box[1], box[2], box[3], box[4]
+        theta = 0
+        if abs(x1 - x2) < 1e-6:
+            theta = 0
+        else:
+            k = - (y2 - y1) / (x2 - x1)
+            theta = np.degrees(np.arctan(k))
+
+        up_xc = (x1 + x2) / 2
+        up_yc = (y1 + y2) / 2
+        theta = int(theta)
+        # draw degree of each detected bone
+        cv2.putText(img, text=str(theta), org=(int(up_xc), int(up_yc+20)), fontFace=1, fontScale=1, thickness=2,
+                    color=(0, 0, 255))
+
+        dtbox[i, :] = [x1, y1, x2, y2, h, theta, up_yc]
+
+    dtbox = dtbox[dtbox[:, 6].argsort()]  # sorted by up_yc
+
+    return img, dtbox
+
+
+def get_r2cnn_cobb(img, dtbox):
+    # dtbox = [x1, y1, x2, y2, h, theta, up_yc]
+    n = dtbox.shape[0]
+    deg = dtbox[:, 5]
+
+    # find turn points
+    res = []
+    tmp = [0, deg[0]]
+    for i in range(1, n):
+        if deg[i] * tmp[1] >= 0:  # same symbol
+            if abs(deg[i]) > abs(tmp[1]):
+                tmp = [i, deg[i]]
+        elif deg[i] * tmp[1] < 0:
+            res.append(tmp)
+            tmp = [i, deg[i]]
+    res.append(tmp)
+    res = np.array(res)
+
+    # if all bone degrees are the same symbol, find the max difference
+    cur = [0, deg[0]]
+    if res.shape[0] == 1:
+        for i in range(1, n):
+            if abs(deg[i]) < abs(cur[1]):
+                cur = [i, deg[i]]
+        res = np.concatenate((np.array(cur).reshape(-1, 2), res))
+
+    # locations to drawing lines
+    lines = []
+    for i in range(res.shape[0]):
+        idx = int(res[i, 0])
+        theta = res[i, 1]
+        x1 = dtbox[idx, 0]
+        y1 = dtbox[idx, 1]
+        x2 = dtbox[idx, 2]
+        y2 = dtbox[idx, 3]
+
+        p1 = np.array([x1, y1])
+        p2 = np.array([x2, y2])
+        p3 = 2.5 * p1 - 1.5 * p2
+        p4 = 2.5 * p2 - 1.5 * p1
+        lines.append([p3[0], p3[1], p4[0], p4[1], theta])
+
+    lines = np.array(lines)
+
+    for i in range(1, lines.shape[0]):
+        ang = abs(lines[i, 4] - lines[i-1, 4])
+        up = lines[i-1, :]
+        up = up.astype(np.int32)
+        cv2.line(img, (up[0], up[1]), (up[2], up[3]), (0, 255, 255), 2)
+        down = lines[i, :]
+        down = down.astype(np.int32)
+        cv2.line(img, (down[0], down[1]), (down[2], down[3]), (0, 255, 255), 2)
+        linx = (lines[i, 0] + lines[i - 1, 0]) / 2.0
+        liny = (lines[i, 1] + lines[i - 1, 1]) / 2.0
+        cv2.putText(img, text=str(int(ang)), org=(int(linx), int(liny)), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                    fontScale=2, thickness=2, color=(0, 255, 255))
+
     return img
 
 

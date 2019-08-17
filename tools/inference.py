@@ -11,6 +11,7 @@ import time
 import cv2
 import numpy as np
 import argparse
+import scipy.io as sio
 
 from data.io.image_preprocess import short_side_resize_for_inference_data
 from libs.configs import cfgs
@@ -77,17 +78,25 @@ def inference(det_net, data_dir):
                                                            labels=det_category_h_,
                                                            scores=det_scores_h_)
 
-            #my_det_boxes = my_getnms_area(det_boxes_r_)
             det_detections_r = mylibs.draw_r2cnn_box(np.squeeze(resized_img, 0),
                                                      boxes=det_boxes_r_,
                                                      labels=det_category_r_,
                                                      scores=det_scores_r_)
 
+            # draw angles
+            deg_img, dtbox = mylibs.get_r2cnn_degree(det_detections_r, det_boxes_r_)
 
-            #cv2.imwrite(save_dir + '/' + a_img_name + '_h.jpg',
-            #            det_detections_h)
+	    anglePath = cfgs.INFERENCE_SAVE_PATH + '/dtbox'
+	    if not os.path.exists(anglePath):
+		os.makedirs(anglePath)
+	    savePath = os.path.join(anglePath, a_img_name+'.mat')
+	    sio.savemat(savePath, {'dtbox':dtbox})
+
+	    # draw cobb images
+            #cobb_img = mylibs.get_r2cnn_cobb(deg_img, dtbox)
+
             cv2.imwrite(save_dir + '/' + a_img_name + '_r.jpg',
-                        det_detections_r)
+                        deg_img)
             view_bar('{} cost {}s'.format(a_img_name, (end - start)), i + 1, len(imgs))
 
 
@@ -98,7 +107,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train a R2CNN network')
     parser.add_argument('--data_dir', dest='data_dir',
                         help='data path',
-                        default='./XrayPics/', type=str)
+                        default='./validSet/JPEGImages/', type=str)
     parser.add_argument('--gpu', dest='gpu',
                         help='gpu index',
                         default='0', type=str)
