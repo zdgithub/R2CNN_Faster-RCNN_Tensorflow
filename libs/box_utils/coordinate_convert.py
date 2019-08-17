@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 
 
+
 def forward_convert(coordinate, with_label=True):
     """
     :param coordinate: format [x_c, y_c, w, h, theta]
@@ -124,16 +125,12 @@ def my_getnms_area(coordinate):
 
 
 if __name__ == '__main__':
-    coord = np.array([[150, 150, 50, 100, -90, 1],
-                      [150, 150, 100, 50, -90, 1],
-                      [150, 150, 50, 100, -45, 1],
-                      [150, 150, 100, 50, -45, 1]])
 
-    coord1 = np.array([[2,1,3,2,np.sqrt(2)]])
-    coord2 = np.array([[1,2,2,1,np.sqrt(2)]])
-    coord4 = np.array([[1,1,3,1,2]])
+    coord1 = np.array([[392.1219, 152.3644, 456.0470, 153.3651, 42.0590],
+                       [392.6227, 152.6220, 456.2122, 153.8851, 41.8631]])
 
-    coord3 = my_getnms_area(coord1)
+
+    boxes = my_getnms_area(coord1)
 
 
 

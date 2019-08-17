@@ -19,6 +19,7 @@ from skimage.util import random_noise
 from skimage import exposure
 from data.dataAugment.xml_helper import *
 import copy
+import scipy.io as sio
 
 
 class DataAugmentForOBB():
@@ -271,16 +272,58 @@ def draw_img(save_dir, img_name, img, bboxes=None):
     :param bboxes: bboxes list [N,8]
     :return:
     '''
-    for rect in bboxes:
-        box = np.int0(rect)
+    # resize the image and its gt label coordinates
+    n = len(bboxes)
+    gtbox = np.zeros((n, 6))
+    h, w = img.shape[:2]
+    if h < w:
+        new_h = 600
+        new_w = 600 * w // h
+    else:
+        new_h = 600 * h // w
+        new_w = 600
+
+    re_img = cv2.resize(img, (new_w, new_h))  # [fxsrc.cols, fysrc.rows]
+
+    for i, rect in enumerate(bboxes):
+        x1, y1, x2, y2 = rect[0]*new_w//w, rect[1]*new_h//h, rect[2]*new_w//w, rect[3]*new_h//h
+        x3, y3, x4, y4 = rect[4]*new_w//w, rect[5]*new_h//h, rect[6]*new_w//w, rect[7]*new_h//h
+        theta = 0
+        if abs(x1 - x2) < 1e-6:
+            theta = 0
+        else:
+            k = - (y2 - y1) / (x2 - x1)
+            theta = np.degrees(np.arctan(k))
+
+        up_xc = (x1 + x2) / 2
+        up_yc = (y1 + y2) / 2
+        theta = int(theta)
+        # draw degree of each detected bone
+        cv2.putText(re_img, text=str(theta), org=(int(up_xc), int(up_yc + 20)), fontFace=1, fontScale=1, thickness=2,
+                    color=(0, 0, 255))
+
+        gtbox[i, :] = [x1, y1, x2, y2, theta, up_yc]
+
+        box = np.int0([x1,y1,x2,y2,x3,y3,x4,y4])
         box = box.reshape([4, 2])
         rect1 = cv2.minAreaRect(box)  # x,y,w,h,theta
         rect1 = cv2.boxPoints(rect1)
         rect1 = np.int0(rect1)
-        cv2.drawContours(img, [rect1], -1, (0, 0, 255), 1)
+        cv2.drawContours(re_img, [rect1], -1, (0, 0, 255), 1)
 
-    save_path = os.path.join(save_dir, img_name)
-    cv2.imwrite(save_path, img)
+    save_path = os.path.join(save_dir, 'output',  img_name)
+    cv2.putText(re_img,
+                text=str(n),
+                org=((re_img.shape[1]) // 2, (re_img.shape[0]) // 2),
+                fontFace=3,
+                fontScale=2,
+                color=(0, 255, 255))
+    cv2.imwrite(save_path, re_img)
+
+    gtbox = gtbox[gtbox[:, 5].argsort()]
+    gtpath = os.path.join(save_dir, 'gtbox', img_name[:-4]+'.mat')
+    sio.savemat(gtpath, {'gtbox':gtbox})
+
 
 
 
@@ -291,11 +334,11 @@ if __name__ == '__main__':
 
     dataAug = DataAugmentForOBB()
     # VOC dataset
-    src_img_path = r'E:\3AllRBox\VOCdevkit\ChabuduoJPEGImages'
-    src_xml_path = r'E:\3AllRBox\VOCdevkit\ChabuduoAnnotation'
+    src_img_path = r'D:\validset\JPEGImages'
+    src_xml_path = r'D:\validset\Annotation'
 
     # save draw_img with bboxes
-    save_dir = r'E:\3AllRBox\VOCdevkit\tmpOutput'
+    save_dir = r'D:\validset'
     aug_dir = r'E:\3AllRBox\VOCdevkit\RandJPEGImages'
     out_xml_path = r'E:\3AllRBox\VOCdevkit\RandAnnotation'
 
@@ -306,12 +349,12 @@ if __name__ == '__main__':
         coords = read_xml(xml_path)  # [-1, 8]
 
         # attention: draw_img cache affect the clean img so destroy the following for (draw_img)
-        # img = cv2.imread(img_path)
-        # draw_img(save_dir, file, img, coords)  # draw raw img with bboxes
+        img = cv2.imread(img_path)
+        draw_img(save_dir, file, img, coords)  # draw raw img with bboxes
 
-        for op in trans:
-            img = cv2.imread(img_path)
-            aug_img, aug_bboxes = dataAug.dataAugment(img, coords, op)
-            draw_img(aug_dir, op+'-'+file, aug_img, [])  # save augment img with bboxes
-            generate_xml(op+'-'+file, aug_bboxes, aug_img.shape, out_xml_path)
+        # for op in trans:
+        #     img = cv2.imread(img_path)
+        #     aug_img, aug_bboxes = dataAug.dataAugment(img, coords, op)
+        #     draw_img(aug_dir, op+'-'+file, aug_img, [])  # save augment img with bboxes
+        #     generate_xml(op+'-'+file, aug_bboxes, aug_img.shape, out_xml_path)
             # print('------------------augment ', file, ' finished------------------')
