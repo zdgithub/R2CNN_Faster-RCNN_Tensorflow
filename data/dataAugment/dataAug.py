@@ -122,10 +122,10 @@ class DataAugmentForOBB():
         d_to_bottom = h - y_max
 
         # random scale the minimum box
-        crop_x_min = int(x_min - random.uniform(d_to_left/3, d_to_left))  # default 0
-        crop_y_min = int(y_min - random.uniform(d_to_top/3, d_to_top))
-        crop_x_max = int(x_max + random.uniform(d_to_right/4, d_to_right))
-        crop_y_max = int(y_max + random.uniform(d_to_right/4, d_to_bottom))
+        crop_x_min = int(x_min - random.uniform(d_to_left/2, d_to_left))  # default 0
+        crop_y_min = int(y_min - random.uniform(1, d_to_top))
+        crop_x_max = int(x_max + random.uniform(d_to_right/2, d_to_right))
+        crop_y_max = int(y_max + random.uniform(d_to_bottom/3, d_to_bottom))
 
         # ensure don't beyond the border
         crop_x_min = max(0, crop_x_min)
@@ -286,18 +286,18 @@ def draw_img(save_dir, img_name, img, bboxes=None):
 
 if __name__ == '__main__':
 
-    # trans = ['crop', 'shift', 'rotate1', 'rotate2']
-    trans = ['crop2', 'crop3', 'crop4', 'crop5', 'rotate3']  # augment 9 images per img
+    # augment 9 images per img
+    trans = ['crop1', 'crop2', 'crop3', 'crop4', 'light', 'shift', 'rotate1', 'rotate2', 'rotate3']
 
     dataAug = DataAugmentForOBB()
     # VOC dataset
-    src_img_path = r'E:\3AllRBox\VOCdevkit\VOCdevkit_train\test'
-    src_xml_path = r'E:\3AllRBox\VOCdevkit\VOCdevkit_train\rawAnnotation'
+    src_img_path = r'C:\Users\lenovo\Desktop\rawJPEGImages'
+    src_xml_path = r'C:\Users\lenovo\Desktop\rawAnnotation'
 
     # save draw_img with bboxes
     # save_dir = r'D:\validset'
-    aug_dir = r'E:\3AllRBox\VOCdevkit\RandImages'
-    out_xml_path = r'E:\3AllRBox\VOCdevkit\RandAnnotation'
+    aug_dir = r'C:\Users\lenovo\Desktop\randImages'
+    out_xml_path = r'C:\Users\lenovo\Desktop\randAnnotation'
 
     for file in os.listdir(src_img_path):
 
